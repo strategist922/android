@@ -16,13 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package com.owncloud.android.domain.validator
 
-package com.owncloud.android.domain.files
+import java.util.regex.Pattern
 
-import com.owncloud.android.domain.files.model.OCFile
+class FileNameValidator {
 
-interface FileRepository {
-    fun checkPathExistence(path: String, userLogged: Boolean): Boolean
-    fun createFolder(remotePath: String, parentFolder: OCFile)
-    fun refreshFolder(remotePath: String)
+    fun validate(string: String): Boolean = !FILE_NAME_REGEX.containsMatchIn(string)
+
+    companion object {
+        // Regex to check both slashes '/' and '\'
+        private val FILE_NAME_REGEX = Pattern.compile(".*[/\\\\].*").toRegex()
+    }
 }

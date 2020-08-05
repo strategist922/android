@@ -17,12 +17,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.owncloud.android.domain.files
+package com.owncloud.android.domain.validator
 
-import com.owncloud.android.domain.files.model.OCFile
+import org.junit.Assert
+import org.junit.Test
 
-interface FileRepository {
-    fun checkPathExistence(path: String, userLogged: Boolean): Boolean
-    fun createFolder(remotePath: String, parentFolder: OCFile)
-    fun refreshFolder(remotePath: String)
+class FileNameValidatorTest {
+
+    private val validator = FileNameValidator()
+
+    @Test
+    fun validateNameOk(){
+        Assert.assertTrue(validator.validate("Photos"))
+    }
+
+    @Test
+    fun validateNameWithBackSlash(){
+        Assert.assertFalse(validator.validate("/Photos"))
+    }
+
+    @Test
+    fun validateNameWithForwardSlash(){
+        Assert.assertFalse(validator.validate("\\Photos"))
+    }
+
+    @Test
+    fun validateNameWithBothSlashes(){
+        Assert.assertFalse(validator.validate("\\Photos/"))
+    }
+
 }

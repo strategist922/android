@@ -20,31 +20,48 @@ package com.owncloud.android.domain.files.usecases
 
 import com.owncloud.android.domain.exceptions.UnauthorizedException
 import com.owncloud.android.domain.files.FileRepository
+import com.owncloud.android.testutil.OC_FILE
 import io.mockk.every
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.Assert
 import org.junit.Test
 
-class RefreshFolderFromServerAsyncUseCaseTest {
+class CreateFolderAsyncUseCaseTest {
+
     private val fileRepository: FileRepository = spyk()
-    private val useCase = RefreshFolderFromServerAsyncUseCase(fileRepository)
-    private val useCaseParams = RefreshFolderFromServerAsyncUseCase.Params("/Photos")
+    private val useCase = CreateFolderAsyncUseCase(fileRepository)
+    private val useCaseParams = CreateFolderAsyncUseCase.Params("new folder", OC_FILE)
 
     @Test
-    fun refreshFolderFromServerOk() {
+    fun createFolderSuccess() {
         val useCaseResult = useCase.execute(useCaseParams)
 
         Assert.assertTrue(useCaseResult.isSuccess)
         Assert.assertFalse(useCaseResult.isError)
         Assert.assertEquals(Unit, useCaseResult.getDataOrNull())
 
-        verify(exactly = 1) { fileRepository.refreshFolder(useCaseParams.remotePath) }
+        verify(exactly = 1) { fileRepository.createFolder(any(), useCaseParams.parentFile) }
     }
 
     @Test
-    fun refreshCapabilitiesFromServerWithUnauthorizedException() {
-        every { fileRepository.refreshFolder(any()) } throws UnauthorizedException()
+    fun createFolderWithForbiddenChars() {
+        // Folder name is blank
+        var useCaseResult = useCase.execute(useCaseParams.copy(folderName = "   "))
+
+        Assert.assertTrue(useCaseResult.isError)
+        Assert.assertTrue(useCaseResult.getThrowableOrNull() is IllegalArgumentException)
+
+        // Parent folder is not a folder :S
+        useCaseResult = useCase.execute(useCaseParams.copy(parentFile = OC_FILE.copy(mimeType = "text/plain")))
+
+        Assert.assertTrue(useCaseResult.isError)
+        Assert.assertTrue(useCaseResult.getThrowableOrNull() is IllegalArgumentException)
+    }
+
+    @Test
+    fun createFolderWithUnauthorizedException() {
+        every { fileRepository.createFolder(any(), any()) } throws UnauthorizedException()
 
         val useCaseResult = useCase.execute(useCaseParams)
 
@@ -54,6 +71,6 @@ class RefreshFolderFromServerAsyncUseCaseTest {
         Assert.assertNull(useCaseResult.getDataOrNull())
         Assert.assertTrue(useCaseResult.getThrowableOrNull() is UnauthorizedException)
 
-        verify(exactly = 1) { fileRepository.refreshFolder(useCaseParams.remotePath) }
+        verify(exactly = 1) { fileRepository.createFolder(any(), useCaseParams.parentFile) }
     }
 }

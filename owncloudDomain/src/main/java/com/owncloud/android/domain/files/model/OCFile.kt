@@ -30,18 +30,25 @@ data class OCFile(
     val parentId: Long? = null,
     val owner: String,
     val length: Long,
-    val creationTimestamp: Long,
+    val creationTimestamp: Long? = null,
     val modifiedTimestamp: Long,
     val remotePath: String,
     val mimeType: String,
-    val etag: String,
-    val permissions: String,
-    val remoteId: String,
-    val privateLink: String
+    val etag: String? = null,
+    val permissions: String? = null,
+    val remoteId: String? = null,
+    val privateLink: String? = null
 ) : Parcelable {
 
+    /**
+     * Use this to find out if this file is a folder.
+     *
+     * @return true if it is a folder
+     */
+    fun isFolder() = mimeType == MIME_DIR || mimeType == MIME_DIR_UNIX
+
     companion object {
-        const val PATH_SEPARATOR = "/"
+        const val PATH_SEPARATOR = '/'
         const val ROOT_PATH = PATH_SEPARATOR
     }
 }
